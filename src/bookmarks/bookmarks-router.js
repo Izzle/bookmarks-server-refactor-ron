@@ -3,6 +3,7 @@ const uuid = require('uuid/v4');
 const { isWebUri } = require('valid-url');
 const logger = require('../logger');
 const { bookmarks } = require('../store');
+const BookmarksService = require('./bookmarks-service');
 
 const bookmarksRouter = express.Router();
 const bodyParser = express.json();
@@ -10,9 +11,14 @@ const bodyParser = express.json();
 
 bookmarksRouter
   .route('/')
-  .get((req, res) => {
-    res
-      .json(bookmarks);
+  .get((req, res, next) => {
+    BookmarksService.getAllBookmarks(req.app.get('db'))
+      .then(bookmarks => {
+        res.json(bookmarks);
+      })
+      .catch(next);
+    // res
+    //   .json(bookmarks);
   })
   .post(bodyParser, (req, res) => {
     const { title, url, description, rating } = req.body;
@@ -55,10 +61,10 @@ bookmarksRouter
   .get((req, res) => {
     const { id } = req.params;
     const bookmark = bookmarks.find( b => b.id === id);
-    
+
     if (!bookmark) {
       logger.error(`Bookmark with id ${id} was not found`);
-      return res 
+      return res
         .status(404)
         .send('Bookmark not found');
     }
@@ -76,11 +82,11 @@ bookmarksRouter
         .status(404)
         .send('Not found');
     }
-  
+
     bookmarks.splice(bookmarkIndex, 1);
 
     logger.info(`Bookmark with the id ${id} deleted.`);
-    
+
     res
       .status(204)
       .end();
