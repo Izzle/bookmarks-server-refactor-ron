@@ -1,4 +1,3 @@
-'use strict';
 require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
@@ -22,6 +21,7 @@ app.use(helmet());
 app.use(validateBearerToken);
 
 app.use('/bookmarks', bookmarksRouter);
+
 
 app.use(errorHandler);
 
