@@ -5,7 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 
 const { NODE_ENV } = require('./config');
-const bookmarksRouter = require('./bookmarks-router');
+const bookmarksRouter = require('./bookmarks/bookmarks-router');
 const errorHandler = require('./error-handler.js');
 const validateBearerToken = require('./validate-bearer-token');
 
