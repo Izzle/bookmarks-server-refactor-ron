@@ -186,11 +186,11 @@ describe('Bookmarks Endpoints', function() {
           .post('/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .send(invalidBookmark)
-          .expect(400, {  error: { message: `'rating' must be a number`} }); // eslint-disable-line quotes
+          .expect(400, {  error: { message: `'rating' must be a number between 1 and 5`} }); // eslint-disable-line quotes
 
       }); 
 
-      it(`responds 400 and 'rating' must be between 1 and 5`, () => {
+      it(`responds 400 and 'rating' must be between 1 and 5`, () => { // eslint-disable-line quotes
         const invalidBookmark = fixtures.makeValidBookmark();
         delete invalidBookmark.id; // not need for POST request
         invalidBookmark.rating = 10;
@@ -199,7 +199,7 @@ describe('Bookmarks Endpoints', function() {
           .post('/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .send(invalidBookmark)
-          .expect(400, {  error: { message: `'rating' must be a number`} }); // eslint-disable-line quotes
+          .expect(400, {  error: { message: `'rating' must be a number between 1 and 5`} }); // eslint-disable-line quotes
       });
     });
 

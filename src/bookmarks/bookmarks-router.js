@@ -49,7 +49,7 @@ bookmarksRouter
     if(isNaN(rating) || (rating > 5 || rating < 1)) {
       logger.error(`Invalid rating ${rating} supplied`);
       return res.status(400).json({
-        error: { message: `'rating' must be a number`} // eslint-disable-line quotes
+        error: { message: `'rating' must be a number between 1 and 5`} // eslint-disable-line quotes
       });
     }
 
