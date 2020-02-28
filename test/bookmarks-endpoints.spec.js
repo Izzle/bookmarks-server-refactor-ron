@@ -63,7 +63,7 @@ describe('Bookmarks Endpoints', function() {
     context('Given an Unauthorized request', () => {
       it('responds 401 and Unauthorized request', () => {
         // this works now because there is some data in our store, but after we update our POST it may not work anymore
-        const thirdBookmark = store.bookmarks[2]; 
+        const thirdBookmark = store.bookmarks[2];
         return supertest(app)
           .get(`/bookmarks/${thirdBookmark}`)
           .expect(401, { error: 'Unauthorized request' });
@@ -100,13 +100,7 @@ describe('Bookmarks Endpoints', function() {
     });
 
     context('Give an XSS attack bookmark', () => {
-      const maliciousBookmark = {
-        id: 1, // the server won't take our ID, but we know this is the only bookmark that will be in the test database - so its ID is 1
-        title: 'Ur haxxed! <script>alert("xss");</script>',
-        url: 'https://www.ninjaz4lyfe.com',
-        description: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
-        rating: 5
-      };
+      const maliciousBookmark = fixtures.makeMaliciousBookmark();
 
       beforeEach('insert malicious bookmark', () => {
         return db
@@ -157,9 +151,15 @@ describe('Bookmarks Endpoints', function() {
         });
     });
 
+    context('Given incorrect field values', () => {
+      it(`it responds 400 and 'rating' must be a number`, () => { // eslint-disable-line quotes
+
+      }); // error: { message: `'rating' must be a number`}
+    });
+
     context('Given there are required fields', () => {
       const requiredFields = ['title', 'url', 'rating'];
-      
+
       // For each required field, we create a newBookmark, delete that field, and run the test on it
       requiredFields.forEach(field => {
         const newBookmark = {
@@ -170,7 +170,7 @@ describe('Bookmarks Endpoints', function() {
 
         it(`responds with 400 and an error message when the ${field} is missing`, () => {
           delete newBookmark[field];
-          
+
           return supertest(app)
             .post('/bookmarks')
             .set('Authorization', `Bearer ${process.env.API_TOKEN}`)

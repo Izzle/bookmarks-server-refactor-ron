@@ -24,6 +24,17 @@ function makeBookmarksArray() {
   ];
 }
 
+function makeMaliciousBookmark() {
+  return {
+    id: 1, // the server won't take our ID, but we know this is the only bookmark that will be in the test database - so its ID is 1
+    title: 'Ur haxxed! <script>alert("xss");</script>',
+    url: 'https://www.ninjaz4lyfe.com',
+    description: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+    rating: 5
+  };
+}
+
 module.exports = { 
   makeBookmarksArray,
+  makeMaliciousBookmark,
 };
