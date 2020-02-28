@@ -1,7 +1,9 @@
 const knex = require('knex');
 const app = require('../src/app');
+
 const fixtures = require('./bookmarks.fixture');
 const store = require('../src/store');
+const { PORT } = require('../src/config');
 
 describe('Bookmarks Endpoints', function() {
   let db;
@@ -116,17 +118,12 @@ describe('Bookmarks Endpoints', function() {
           expect(res.body.description).to.eql(newBookmark.description);
           expect(res.body.rating).to.eql(newBookmark.rating);
           expect(res.body).to.have.property('id');
+          expect(res.headers.location).to.eql(`http://localhost:${PORT}/bookmarks/${res.body.id}`);
           return db('bookmarks_table')
             .where({ id: res.body.id })
             .first()
             .then(res => expect(res).to.exist);
         });
-        // .then(postRes => {
-        //   return db('bookmarks_table')
-        //     .where({ id: postRes.body.id })
-        //     .first()
-        //     .then(res => expect(res).to.exist);
-        // });
     });
   });
 });
