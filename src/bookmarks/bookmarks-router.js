@@ -28,10 +28,11 @@ bookmarksRouter
   })
   .post(bodyParser, (req, res, next) => {
     const { title, url, description, rating } = req.body;
-    const requiredFields =  { title, url,  rating };
+    const requiredFields =  { title, url, rating };
 
     for (const [key, value] of Object.entries(requiredFields)) {
       if (value == null) {  // eslint-disable-line eqeqeq
+        logger.error(`Invalid ${key} '${value}' supplied`);
         return res.status(400).json({
           error: { message: `Missing ${key} in request body`}
         });
