@@ -17,8 +17,6 @@ bookmarksRouter
         res.json(bookmarks);
       })
       .catch(next);
-    // res
-    //   .json(bookmarks);
   })
   .post(bodyParser, (req, res) => {
     const { title, url, description, rating } = req.body;

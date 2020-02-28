@@ -47,6 +47,12 @@ describe.only('Bookmarks Endpoints', function() {
           .insert(testBookmarks);
       });
 
+      it('responds with 200 and all of the bookmarks', () => {
+        return supertest(app)
+          .get('/bookmarks')
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(200, testBookmarks);
+      });
 
     });
   });
