@@ -67,7 +67,7 @@ bookmarksRouter
         res
           .status(201)
           .location(`http://localhost:8000/bookmarks/${bookmark.id}`)
-          .json(bookmark);
+          .json(serializeBookmark(bookmark));
       })
       .catch(next);
   });

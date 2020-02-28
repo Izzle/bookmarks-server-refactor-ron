@@ -32,15 +32,12 @@ describe('Bookmarks Endpoints', function() {
       });
     });
 
-
-
-
-    context('Given an XSS attack bookmark', () => {
+    context('Given an XSS attack bookmark in the bookmarks array', () => {
       const testBookmarks = fixtures.makeBookmarksArray();
       const maliciousBookmark = fixtures.makeMaliciousBookmark();
       testBookmarks.push(maliciousBookmark);
 
-      beforeEach('insert malicious bookmark', () => {
+      beforeEach('insert bookmarks with malicious bookmark', () => {
         return db
           .into('bookmarks_table')
           .insert(testBookmarks);
@@ -52,7 +49,6 @@ describe('Bookmarks Endpoints', function() {
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200)
           .expect(res => {
-//            expect(res.body[3].title).to.eql('what is it');
             expect(res.body[3].title).to.eql('Ur haxxed! &lt;script&gt;alert(\"xss\");&lt;/script&gt;');
             expect(res.body[3].url).to.eql('https://www.ninjaz4lyfe.com');
             expect(res.body[3].description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`);
@@ -61,11 +57,6 @@ describe('Bookmarks Endpoints', function() {
   
       });
     });
-
-
-
-
-
 
     context('Given no bookmarks', () => {
       it('responds 200 and an empty list', () => {
@@ -115,6 +106,30 @@ describe('Bookmarks Endpoints', function() {
       });
     });
 
+    context('Given an XSS attack bookmark', () => {
+      const maliciousBookmark = fixtures.makeMaliciousBookmark();
+  
+      beforeEach('insert malicious bookmark', () => {
+        return db
+          .into('bookmarks_table')
+          .insert([ maliciousBookmark ]);
+      });
+  
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get(`/bookmarks/${maliciousBookmark.id}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(200)
+          .expect(res => {
+            expect(res.body.title).to.eql('Ur haxxed! &lt;script&gt;alert(\"xss\");&lt;/script&gt;');
+            expect(res.body.url).to.eql('https://www.ninjaz4lyfe.com');
+            expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`);
+            expect(res.body.rating).to.equal(5);
+          });
+  
+      });
+    });
+
     context('Given there are bookmarks in the database', () => {
       const testBookmarks = fixtures.makeBookmarksArray();
 
@@ -133,54 +148,32 @@ describe('Bookmarks Endpoints', function() {
           .expect(200, expectedBookmark);
       });
     });
+  });
+
+  describe('POST /bookmarks', () => {
 
     context('Given an XSS attack bookmark', () => {
       const maliciousBookmark = fixtures.makeMaliciousBookmark();
-
-      beforeEach('insert malicious bookmark', () => {
-        return db
-          .into('bookmarks_table')
-          .insert([ maliciousBookmark ]);
-      });
-
-      it('removes XSS attack content', () => {
+  
+      it('removes XSS attack content, responding 201 with the sanitized bookmark', () => {
         return supertest(app)
-          .get(`/bookmarks/${maliciousBookmark.id}`)
+          .post('/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
-          .expect(200)
+          .send(maliciousBookmark)
+          .expect(201)
           .expect(res => {
             expect(res.body.title).to.eql('Ur haxxed! &lt;script&gt;alert(\"xss\");&lt;/script&gt;');
             expect(res.body.url).to.eql('https://www.ninjaz4lyfe.com');
             expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`);
             expect(res.body.rating).to.equal(5);
+            expect(res.headers.location).to.eql(`http://localhost:${PORT}/bookmarks/${res.body.id}`);
+            return db('bookmarks_table') // this checks that the bookmark was actually created in the database
+              .where({ id: res.body.id })
+              .first()
+              .then(res => expect(res).to.exist);
           });
-
+  
       });
-    });
-  });
-
-  describe('POST /bookmarks', () => {
-    it('creates a bookmark, responding with 201 and the new bookmark', () => {
-      const newBookmark = fixtures.makeValidBookmark();
-      delete newBookmark.id; // not needed for a POST request. We want a totally valid POST request here
-
-      return supertest(app)
-        .post('/bookmarks')
-        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
-        .send(newBookmark)
-        .expect(201)
-        .expect(res => {
-          expect(res.body.title).to.eql(newBookmark.title);
-          expect(res.body.url).to.eql(newBookmark.url);
-          expect(res.body.description).to.eql(newBookmark.description);
-          expect(res.body.rating).to.eql(newBookmark.rating);
-          expect(res.body).to.have.property('id');
-          expect(res.headers.location).to.eql(`http://localhost:${PORT}/bookmarks/${res.body.id}`);
-          return db('bookmarks_table')
-            .where({ id: res.body.id })
-            .first()
-            .then(res => expect(res).to.exist);
-        });
     });
 
     context('Given incorrect field values', () => {
@@ -220,6 +213,29 @@ describe('Bookmarks Endpoints', function() {
         });
 
       });
+    });
+
+    it('creates a bookmark, responding with 201 and the new bookmark', () => {
+      const newBookmark = fixtures.makeValidBookmark();
+      delete newBookmark.id; // not needed for a POST request. We want a totally valid POST request here
+  
+      return supertest(app)
+        .post('/bookmarks')
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+        .send(newBookmark)
+        .expect(201)
+        .expect(res => {
+          expect(res.body.title).to.eql(newBookmark.title);
+          expect(res.body.url).to.eql(newBookmark.url);
+          expect(res.body.description).to.eql(newBookmark.description);
+          expect(res.body.rating).to.eql(newBookmark.rating);
+          expect(res.body).to.have.property('id');
+          expect(res.headers.location).to.eql(`http://localhost:${PORT}/bookmarks/${res.body.id}`);
+          return db('bookmarks_table') // this checks that the bookmark was actually created in the database
+            .where({ id: res.body.id })
+            .first()
+            .then(res => expect(res).to.exist);
+        });
     });
   });
 });
