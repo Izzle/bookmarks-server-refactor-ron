@@ -56,18 +56,32 @@ bookmarksRouter
 
 bookmarksRouter
   .route('/:id')
-  .get((req, res) => {
-    const { id } = req.params;
-    const bookmark = bookmarks.find( b => b.id === id);
+  .get((req, res, next) => {
+   
+    BookmarksService.getById(req.app.get('db'), req.params.id)
+      .then(bookmark => {
+        if (!bookmark) {
+          logger.error(`Bookmark with id ${req.params.id} was not found`);
+          return res
+            .status(404)
+            .json({ 
+              error: { message: 'Bookmark not found' }
+            });
+        }
+        res.json(bookmark);
+      })
+      .catch(next);
+    // const { id } = req.params;
+    // const bookmark = bookmarks.find( b => b.id === id);
 
-    if (!bookmark) {
-      logger.error(`Bookmark with id ${id} was not found`);
-      return res
-        .status(404)
-        .send('Bookmark not found');
-    }
+    // if (!bookmark) {
+    //   logger.error(`Bookmark with id ${id} was not found`);
+    //   return res
+    //     .status(404)
+    //     .send('Bookmark not found');
+    // }
 
-    res.json(bookmark);
+    // res.json(bookmark);
   })
   .delete((req, res) => {
     const { id } = req.params;

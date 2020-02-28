@@ -73,7 +73,7 @@ describe.only('Bookmarks Endpoints', function() {
         return supertest(app)
           .get(`/bookmarks/${bookmarkId}`)
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
-          .expect(404, 'Bookmark not found');
+          .expect(404, { error: { message: 'Bookmark not found' }});
       });
     });
 
@@ -84,6 +84,15 @@ describe.only('Bookmarks Endpoints', function() {
         return db
           .into('bookmarks_table')
           .insert(testBookmarks);
+      });
+
+      it('responds 200 with the specificed bookmark', () => {
+        const bookmarkId = 2;
+        const expectedBookmark = testBookmarks[bookmarkId - 1];
+        return supertest(app)
+          .get(`/bookmarks/${bookmarkId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(200, expectedBookmark);
       });
     });
   });
