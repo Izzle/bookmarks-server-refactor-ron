@@ -9,7 +9,7 @@ function validateBearerToken(req, res, next) {
     logger.error(`Unauthorized request to path ${req.path}`);
     return res
       .status(401)
-      .json({ error: 'Unauthorized request '});
+      .json({ error: 'Unauthorized request'});
   }
   //move to next middleware
   next();

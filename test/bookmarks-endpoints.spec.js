@@ -20,7 +20,22 @@ describe.only('Bookmarks Endpoints', function() {
   afterEach('cleanup', () => db('bookmarks_table').truncate());
 
   describe('GET /bookmarks', () => {
-    context('Given no bookmarks', () => {});
+    context('Given an authorized request', () => {
+      it('responds 401 Unauthorized', () => {
+        return supertest(app)
+          .get('/bookmarks')
+          .expect(401, { error: 'Unauthorized request' });
+      });
+    });
+
+    context('Given no bookmarks', () => {
+      it('respoonds 200 and an empty list', () => {
+        return supertest(app)
+          .get('/bookmarks')
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(200, []);
+      });
+    });
 
     context('Given there are are bookmarks in the database', () => {});
   });
