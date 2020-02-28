@@ -1,4 +1,5 @@
 const express = require('express');
+const xss = require('xss');
 const { isWebUri } = require('valid-url');
 const logger = require('../logger');
 const { bookmarks } = require('../store');
@@ -22,7 +23,7 @@ bookmarksRouter
     const requiredFields =  { title, url,  rating };
 
     for (const [key, value] of Object.entries(requiredFields)) {
-      if (value == null || !value) {
+      if (value == null || !value) {  // eslint-disable-line eqeqeq
         return res.status(400).json({
           error: { message: `Missing ${key} in request body`}
         });
@@ -32,9 +33,17 @@ bookmarksRouter
     if (!isWebUri(url)) {
       logger.error(`Invalid url '${url}' supplied`);
       // eslint-disable-next-line quotes
-      return res.status(400).send(`'url' must be a valid URL`);
+      return res.status(400).json({
+        error: { message: `'url' must be a valid URL`} // eslint-disable-line quotes
+      });
     }
 
+    if(isNaN(rating)) {
+      logger.error(`Invalid rating ${rating} supplied`);
+      return res.status(400).json({
+        error: { message: `'rating' must be a number`} // eslint-disable-line quotes
+      });
+    }
     // After all validation, we can make our newBookmark object to send to the database
     const newBookmark = {
       title,
@@ -68,7 +77,13 @@ bookmarksRouter
               error: { message: 'Bookmark not found' }
             });
         }
-        res.json(bookmark);
+        res.json({
+          id: bookmark.id,
+          title: xss(bookmark.title),
+          url: xss(bookmark.url),
+          description: xss(bookmark.description),
+          rating: bookmark.rating // we dont need to run XSS on rating because we validate that the rating is a number both on the API server and the Database TYPE checks this as well.
+        });
       })
       .catch(next);
   })

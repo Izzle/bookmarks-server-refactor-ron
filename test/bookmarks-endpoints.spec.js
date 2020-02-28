@@ -98,9 +98,39 @@ describe('Bookmarks Endpoints', function() {
           .expect(200, expectedBookmark);
       });
     });
+
+    context('Give an XSS attack bookmark', () => {
+      const maliciousBookmark = {
+        id: 1, // the server won't take our ID, but we know this is the only bookmark that will be in the test database - so its ID is 1
+        title: 'Ur haxxed! <script>alert("xss");</script>',
+        url: 'https://www.ninjaz4lyfe.com',
+        description: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+        rating: 5
+      };
+
+      beforeEach('insert malicious bookmark', () => {
+        return db
+          .into('bookmarks_table')
+          .insert([ maliciousBookmark ]);
+      });
+
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get(`/bookmarks/${maliciousBookmark.id}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(200)
+          .expect(res => {
+            expect(res.body.title).to.eql('Ur haxxed! &lt;script&gt;alert(\"xss\");&lt;/script&gt;');
+            expect(res.body.url).to.eql('https://www.ninjaz4lyfe.com');
+            expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`);
+            expect(res.body.rating).to.equal(5);
+          });
+
+      });
+    });
   });
 
-  describe.only('POST /bookmarks', () => {
+  describe('POST /bookmarks', () => {
     it('creates a bookmark, responding with 201 and the new bookmark', () => {
       const newBookmark = {
         title: 'Firefox',
