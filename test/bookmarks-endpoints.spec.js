@@ -1,6 +1,6 @@
 const knex = require('knex');
 const app = require('../src/app');
-const { makeBookmarksArray } = require('./bookmarks.fixture');
+const fixtures = require('./bookmarks.fixture');
 const store = require('../src/store');
 
 describe.only('Bookmarks Endpoints', function() {
@@ -39,7 +39,7 @@ describe.only('Bookmarks Endpoints', function() {
     });
 
     context('Given there are are bookmarks in the database', () => {
-      const testBookmarks = makeBookmarksArray();
+      const testBookmarks = fixtures.makeBookmarksArray();
 
       beforeEach('insert bookmarks', () => {
         return db
@@ -77,7 +77,15 @@ describe.only('Bookmarks Endpoints', function() {
       });
     });
 
-    context('Given there are are bookmarks in the database', () => {});
+    context('Given there are are bookmarks in the database', () => {
+      const testBookmarks = fixtures.makeBookmarksArray();
+
+      beforeEach('insert bookmarks', () => {
+        return db
+          .into('bookmarks_table')
+          .insert(testBookmarks);
+      });
+    });
   });
 
 });
