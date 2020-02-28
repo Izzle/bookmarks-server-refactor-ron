@@ -177,7 +177,7 @@ describe('Bookmarks Endpoints', function() {
     });
 
     context('Given incorrect field values', () => {
-      it(`it responds 400 and 'rating' must be a number`, () => { // eslint-disable-line quotes
+      it(`responds 400 and 'rating' must be a number`, () => { // eslint-disable-line quotes
         const invalidBookmark = fixtures.makeValidBookmark();
         delete invalidBookmark.id; // not needed for a POST request. We dont accept it anyways, but we are only trying to test the numbers here
         invalidBookmark.rating = 'lol not a number yo';
@@ -188,7 +188,19 @@ describe('Bookmarks Endpoints', function() {
           .send(invalidBookmark)
           .expect(400, {  error: { message: `'rating' must be a number`} }); // eslint-disable-line quotes
 
-      }); // error: { message: `'rating' must be a number`}
+      }); 
+
+      it(`responds 400 and 'rating' must be between 1 and 5`, () => {
+        const invalidBookmark = fixtures.makeValidBookmark();
+        delete invalidBookmark.id; // not need for POST request
+        invalidBookmark.rating = 10;
+
+        return supertest(app)
+          .post('/bookmarks')
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .send(invalidBookmark)
+          .expect(400, {  error: { message: `'rating' must be a number`} }); // eslint-disable-line quotes
+      });
     });
 
     context('Given there are required fields', () => {

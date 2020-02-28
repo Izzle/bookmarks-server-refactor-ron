@@ -31,7 +31,7 @@ bookmarksRouter
     const requiredFields =  { title, url,  rating };
 
     for (const [key, value] of Object.entries(requiredFields)) {
-      if (value == null || !value) {  // eslint-disable-line eqeqeq
+      if (value == null) {  // eslint-disable-line eqeqeq
         return res.status(400).json({
           error: { message: `Missing ${key} in request body`}
         });
@@ -46,7 +46,7 @@ bookmarksRouter
       });
     }
 
-    if(isNaN(rating)) {
+    if(isNaN(rating) || (rating > 5 || rating < 1)) {
       logger.error(`Invalid rating ${rating} supplied`);
       return res.status(400).json({
         error: { message: `'rating' must be a number`} // eslint-disable-line quotes
