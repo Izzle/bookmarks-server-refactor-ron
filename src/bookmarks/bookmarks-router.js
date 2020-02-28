@@ -18,7 +18,7 @@ bookmarksRouter
       })
       .catch(next);
   })
-  .post(bodyParser, (req, res) => {
+  .post(bodyParser, (req, res, next) => {
     const { title, url, description, rating } = req.body;
     // the advantage of this approach is the code is cleaner
     // the disadvantage is the error message is less specific
@@ -35,23 +35,22 @@ bookmarksRouter
       return res.status(400).send(`'url' must be a valid URL`);
     }
 
-    const id = uuid();
-    const bookmark = {
-      id,
+    const newBookmark = {
       title,
       url,
       description,
       rating
     };
 
-    bookmarks.push(bookmark);
-
-    logger.info(`Bookmark with the id ${id} created.`);
-
-    res
-      .status(201)
-      .location(`http://localhost:8000/bookmarks/${id}`)
-      .json(bookmark);
+    BookmarksService.insertBookmark(req.app.get('db'), newBookmark)
+      .then(bookmark => {
+        logger.info(`Bookmark with the id ${bookmark.id} created.`);
+        res
+          .status(201)
+          .location(`http://localhost:8000/bookmarks/${bookmark.id}`)
+          .json(bookmark);
+      })
+      .catch(next);
   });
 
 bookmarksRouter

@@ -3,7 +3,7 @@ const app = require('../src/app');
 const fixtures = require('./bookmarks.fixture');
 const store = require('../src/store');
 
-describe.only('Bookmarks Endpoints', function() {
+describe('Bookmarks Endpoints', function() {
   let db;
 
   before('make knex instance', () => {
@@ -97,4 +97,36 @@ describe.only('Bookmarks Endpoints', function() {
     });
   });
 
+  describe.only('POST /bookmarks', () => {
+    it('creates a bookmark, responding with 201 and the new bookmark', () => {
+      const newBookmark = {
+        title: 'Firefox',
+        url: 'https://www.firefox.com',
+        description: 'Less ads than Chrome',
+        rating: 5
+      };
+      return supertest(app)
+        .post('/bookmarks')
+        .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+        .send(newBookmark)
+        .expect(201)
+        .expect(res => {
+          expect(res.body.title).to.eql(newBookmark.title);
+          expect(res.body.url).to.eql(newBookmark.url);
+          expect(res.body.description).to.eql(newBookmark.description);
+          expect(res.body.rating).to.eql(newBookmark.rating);
+          expect(res.body).to.have.property('id');
+          return db('bookmarks_table')
+            .where({ id: res.body.id })
+            .first()
+            .then(res => expect(res).to.exist);
+        });
+        // .then(postRes => {
+        //   return db('bookmarks_table')
+        //     .where({ id: postRes.body.id })
+        //     .first()
+        //     .then(res => expect(res).to.exist);
+        // });
+    });
+  });
 });
