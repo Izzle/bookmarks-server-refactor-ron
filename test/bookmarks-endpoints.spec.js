@@ -1,3 +1,4 @@
+/*eslint-env node, mocha */
 const knex = require('knex');
 const app = require('../src/app');
 
@@ -70,7 +71,7 @@ describe('Bookmarks Endpoints', function() {
     });
 
     context('Given no bookmarks', () => {
-      it(`responds 404 and 'Bookmark not found'`, () => {
+      it(`responds 404 and 'Bookmark not found'`, () => { // eslint-disable-line quotes
         const bookmarkId = 1234567890;
         return supertest(app)
           .get(`/bookmarks/${bookmarkId}`)
