@@ -19,13 +19,14 @@ bookmarksRouter
   })
   .post(bodyParser, (req, res, next) => {
     const { title, url, description, rating } = req.body;
-    // the advantage of this approach is the code is cleaner
-    // the disadvantage is the error message is less specific
-    if(!title || !url || !description || !rating) {
-      logger.error('All fields are required');
-      return res
-        .status(400)
-        .send('Invalid data');
+    const requiredFields =  { title, url,  rating };
+
+    for (const [key, value] of Object.entries(requiredFields)) {
+      if (value == null || !value) {
+        return res.status(400).json({
+          error: { message: `Missing ${key} in request body`}
+        });
+      }
     }
 
     if (!isWebUri(url)) {
@@ -34,6 +35,7 @@ bookmarksRouter
       return res.status(400).send(`'url' must be a valid URL`);
     }
 
+    // After all validation, we can make our newBookmark object to send to the database
     const newBookmark = {
       title,
       url,

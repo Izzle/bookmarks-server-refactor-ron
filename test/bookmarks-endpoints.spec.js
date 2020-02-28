@@ -79,7 +79,7 @@ describe('Bookmarks Endpoints', function() {
       });
     });
 
-    context('Given there are are bookmarks in the database', () => {
+    context('Given there are bookmarks in the database', () => {
       const testBookmarks = fixtures.makeBookmarksArray();
 
       beforeEach('insert bookmarks', () => {
@@ -124,6 +124,30 @@ describe('Bookmarks Endpoints', function() {
             .first()
             .then(res => expect(res).to.exist);
         });
+    });
+
+    context('Given there are required fields', () => {
+      const requiredFields = ['title', 'url', 'rating'];
+      
+      // For each required field, we create a newBookmark, delete that field, and run the test on it
+      requiredFields.forEach(field => {
+        const newBookmark = {
+          title: 'Google',
+          url: 'https://www.google.com',
+          rating: '4'
+        };
+
+        it(`responds with 400 and an error message when the ${field} is missing`, () => {
+          delete newBookmark[field];
+          
+          return supertest(app)
+            .post('/bookmarks')
+            .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+            .send(newBookmark)
+            .expect(400, {  error: { message: `Missing ${field} in request body`} });
+        });
+
+      });
     });
   });
 });
