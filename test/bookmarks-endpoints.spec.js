@@ -53,7 +53,6 @@ describe.only('Bookmarks Endpoints', function() {
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200, testBookmarks);
       });
-
     });
   });
 
@@ -68,7 +67,15 @@ describe.only('Bookmarks Endpoints', function() {
       });
     });
 
-    context('Given no bookmarks', () => {});
+    context('Given no bookmarks', () => {
+      it(`responds 404 and 'Bookmark not found'`, () => {
+        const bookmarkId = 1234567890;
+        return supertest(app)
+          .get(`/bookmarks/${bookmarkId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(404, 'Bookmark not found');
+      });
+    });
 
     context('Given there are are bookmarks in the database', () => {});
   });
