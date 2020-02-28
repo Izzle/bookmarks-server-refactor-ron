@@ -126,12 +126,9 @@ describe('Bookmarks Endpoints', function() {
 
   describe('POST /bookmarks', () => {
     it('creates a bookmark, responding with 201 and the new bookmark', () => {
-      const newBookmark = {
-        title: 'Firefox',
-        url: 'https://www.firefox.com',
-        description: 'Less ads than Chrome',
-        rating: 5
-      };
+      const newBookmark = fixtures.makeValidBookmark();
+      delete newBookmark.id; // not needed for a POST request. We want a totally valid POST request here
+
       return supertest(app)
         .post('/bookmarks')
         .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
@@ -152,15 +149,16 @@ describe('Bookmarks Endpoints', function() {
     });
 
     context('Given incorrect field values', () => {
-      it.only(`it responds 400 and 'rating' must be a number`, () => { // eslint-disable-line quotes
+      it(`it responds 400 and 'rating' must be a number`, () => { // eslint-disable-line quotes
         const invalidBookmark = fixtures.makeValidBookmark();
+        delete invalidBookmark.id; // not needed for a POST request. We dont accept it anyways, but we are only trying to test the numbers here
         invalidBookmark.rating = 'lol not a number yo';
 
         return supertest(app)
           .post('/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .send(invalidBookmark)
-          .expect(400, {  error: { message: `'rating' must be a number`} });
+          .expect(400, {  error: { message: `'rating' must be a number`} }); // eslint-disable-line quotes
 
       }); // error: { message: `'rating' must be a number`}
     });

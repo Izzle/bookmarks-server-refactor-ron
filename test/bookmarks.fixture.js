@@ -36,11 +36,11 @@ function makeMaliciousBookmark() {
 
 function makeValidBookmark() {
   return {
-    id: 5,
-    title: 'Bing',
-    url: 'https://www.bing.com',
-    description: 'I mean.. if google is down you can use this I guess',
-    rating: 2
+    id: 7,
+    title: 'Firefox',
+    url: 'https://www.firefox.com',
+    description: 'Less ads than Chrome',
+    rating: 5
   };
 }
 
