@@ -32,6 +32,41 @@ describe('Bookmarks Endpoints', function() {
       });
     });
 
+
+
+
+    context('Given an XSS attack bookmark', () => {
+      const testBookmarks = fixtures.makeBookmarksArray();
+      const maliciousBookmark = fixtures.makeMaliciousBookmark();
+      testBookmarks.push(maliciousBookmark);
+
+      beforeEach('insert malicious bookmark', () => {
+        return db
+          .into('bookmarks_table')
+          .insert(testBookmarks);
+      });
+  
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get('/bookmarks')
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(200)
+          .expect(res => {
+//            expect(res.body[3].title).to.eql('what is it');
+            expect(res.body[3].title).to.eql('Ur haxxed! &lt;script&gt;alert(\"xss\");&lt;/script&gt;');
+            expect(res.body[3].url).to.eql('https://www.ninjaz4lyfe.com');
+            expect(res.body[3].description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`);
+            expect(res.body[3].rating).to.equal(5);
+          });
+  
+      });
+    });
+
+
+
+
+
+
     context('Given no bookmarks', () => {
       it('responds 200 and an empty list', () => {
         return supertest(app)
@@ -99,7 +134,7 @@ describe('Bookmarks Endpoints', function() {
       });
     });
 
-    context('Give an XSS attack bookmark', () => {
+    context('Given an XSS attack bookmark', () => {
       const maliciousBookmark = fixtures.makeMaliciousBookmark();
 
       beforeEach('insert malicious bookmark', () => {

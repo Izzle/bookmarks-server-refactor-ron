@@ -8,13 +8,21 @@ const BookmarksService = require('./bookmarks-service');
 const bookmarksRouter = express.Router();
 const bodyParser = express.json();
 
+const serializeBookmark = bookmark => ({
+  id: bookmark.id,
+  title: xss(bookmark.title),
+  url: xss(bookmark.url),
+  description: xss(bookmark.description),
+  rating: bookmark.rating // we dont need to run XSS on rating because we validate that the rating is a number both on the API server and the Database TYPE checks this as well.
+});
 
 bookmarksRouter
   .route('/')
   .get((req, res, next) => {
-    BookmarksService.getAllBookmarks(req.app.get('db'))
+    const knexInstance = req.app.get('db'); // we can just put req.app.get('db') directly into .getAllBookmarks, but this a good reminder of what it does
+    BookmarksService.getAllBookmarks(knexInstance)
       .then(bookmarks => {
-        res.json(bookmarks);
+        res.json(bookmarks.map(serializeBookmark));
       })
       .catch(next);
   })
@@ -44,6 +52,7 @@ bookmarksRouter
         error: { message: `'rating' must be a number`} // eslint-disable-line quotes
       });
     }
+
     // After all validation, we can make our newBookmark object to send to the database
     const newBookmark = {
       title,
@@ -77,13 +86,7 @@ bookmarksRouter
               error: { message: 'Bookmark not found' }
             });
         }
-        res.json({
-          id: bookmark.id,
-          title: xss(bookmark.title),
-          url: xss(bookmark.url),
-          description: xss(bookmark.description),
-          rating: bookmark.rating // we dont need to run XSS on rating because we validate that the rating is a number both on the API server and the Database TYPE checks this as well.
-        });
+        res.json(serializeBookmark(bookmark));
       })
       .catch(next);
   })
