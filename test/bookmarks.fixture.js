@@ -34,7 +34,18 @@ function makeMaliciousBookmark() {
   };
 }
 
+function makeValidBookmark() {
+  return {
+    id: 5,
+    title: 'Bing',
+    url: 'https://www.bing.com',
+    description: 'I mean.. if google is down you can use this I guess',
+    rating: 2
+  };
+}
+
 module.exports = { 
   makeBookmarksArray,
   makeMaliciousBookmark,
+  makeValidBookmark,
 };

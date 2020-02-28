@@ -152,7 +152,15 @@ describe('Bookmarks Endpoints', function() {
     });
 
     context('Given incorrect field values', () => {
-      it(`it responds 400 and 'rating' must be a number`, () => { // eslint-disable-line quotes
+      it.only(`it responds 400 and 'rating' must be a number`, () => { // eslint-disable-line quotes
+        const invalidBookmark = fixtures.makeValidBookmark();
+        invalidBookmark.rating = 'lol not a number yo';
+
+        return supertest(app)
+          .post('/bookmarks')
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .send(invalidBookmark)
+          .expect(400, {  error: { message: `'rating' must be a number`} });
 
       }); // error: { message: `'rating' must be a number`}
     });
