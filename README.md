@@ -1,4 +1,4 @@
-# Bookmarks server
-Authors: Lillian and Ron
+# Bookmarks server refactor
 
-Used for: https://courses.thinkful.com/ei-node-postgres-v1/checkpoint/9
+
+Used for: https://courses.thinkful.com/ei-node-postgres-v1/checkpoint/15
