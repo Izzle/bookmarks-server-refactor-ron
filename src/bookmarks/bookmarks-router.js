@@ -75,8 +75,8 @@ bookmarksRouter
 
 bookmarksRouter
   .route('/:id')
-  .get((req, res, next) => {
-   
+  .all((req, res, next) => {
+       
     BookmarksService.getById(req.app.get('db'), req.params.id)
       .then(bookmark => {
         if (!bookmark) {
@@ -87,38 +87,26 @@ bookmarksRouter
               error: { message: 'Bookmark not found' }
             });
         }
-        res.json(serializeBookmark(bookmark));
+        res.bookmark = bookmark; // save the bookmark for the next bookmark
+        next(); // don't forget to call next so the next middleware happens!
       })
       .catch(next);
   })
+  .get((req, res, next) => { 
+    res.json(serializeBookmark(res.bookmark));
+  })
   .delete((req, res, next) => {
     const knexInstance = req.app.get('db');
+    const { id } = req.params;
     BookmarksService.deleteBookmark(
       knexInstance,
-      req.params.id
+      id
     )
       .then(() => {
+        logger.info(`Bookmark with the id ${id} deleted.`);
         res.status(204).end();
       })
       .catch(next);
-    // const { id } = req.params;
-
-    // const bookmarkIndex = bookmarks.findIndex( b => b.id === id);
-
-    // if (bookmarkIndex === -1) {
-    //   logger.error(`Bookmark with the id ${id} is not found`);
-    //   return res
-    //     .status(404)
-    //     .send('Not found');
-    // }
-
-    // bookmarks.splice(bookmarkIndex, 1);
-
-    // logger.info(`Bookmark with the id ${id} deleted.`);
-
-    // res
-    //   .status(204)
-    //   .end();
   });
 
 module.exports = bookmarksRouter;

@@ -51,7 +51,7 @@ describe('Bookmarks Endpoints', function() {
           .expect(res => {
             expect(res.body[3].title).to.eql('Ur haxxed! &lt;script&gt;alert(\"xss\");&lt;/script&gt;');
             expect(res.body[3].url).to.eql('https://www.ninjaz4lyfe.com');
-            expect(res.body[3].description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`);
+            expect(res.body[3].description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`); // eslint-disable-line quotes
             expect(res.body[3].rating).to.equal(5);
           });
   
@@ -123,7 +123,7 @@ describe('Bookmarks Endpoints', function() {
           .expect(res => {
             expect(res.body.title).to.eql('Ur haxxed! &lt;script&gt;alert(\"xss\");&lt;/script&gt;');
             expect(res.body.url).to.eql('https://www.ninjaz4lyfe.com');
-            expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`);
+            expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`); // eslint-disable-line quotes
             expect(res.body.rating).to.equal(5);
           });
   
@@ -163,8 +163,8 @@ describe('Bookmarks Endpoints', function() {
           .expect(201)
           .expect(res => {
             expect(res.body.title).to.eql('Ur haxxed! &lt;script&gt;alert(\"xss\");&lt;/script&gt;');
-            expect(res.body.url).to.eql('https://www.ninjaz4lyfe.com');
-            expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`);
+            expect(res.body.url).to.eql('https://www.ninjaz4lyfe.com'); 
+            expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`); // eslint-disable-line quotes
             expect(res.body.rating).to.equal(5);
             expect(res.headers.location).to.eql(`http://localhost:${PORT}/bookmarks/${res.body.id}`);
             return db('bookmarks_table') // this checks that the bookmark was actually created in the database
@@ -251,14 +251,14 @@ describe('Bookmarks Endpoints', function() {
     });
   });
 
-  describe.only('DELETE /bookmarks/:id', () => {
+  describe('DELETE /bookmarks/:id', () => {
     context('Given no bookmarks', () => {
       it('responds with 404', () => {
         const bookmarkId = 1234567;
         return supertest(app)
           .delete(`/bookmarks/${bookmarkId}`)
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
-          .expect(404, 'lol');
+          .expect(404, { error: { message: 'Bookmark not found' }});
       });
     });
 
