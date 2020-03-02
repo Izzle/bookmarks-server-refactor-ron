@@ -113,6 +113,14 @@ bookmarksRouter
     const { title, url, description, rating } = req.body;
     const bookmarkToUpdate = { title, url, description, rating };
     
+    const numberOfValues = Object.values(bookmarkToUpdate).filter(Boolean).length;
+    if (numberOfValues === 0) {
+      return res.status(400).json({
+        error: {
+          message: `Request body must contain either 'title', 'url', 'description', or 'rating'`  // eslint-disable-line quotes
+        }
+      });
+    }
 
     BookmarksService.updateBookmark(
       req.app.get('db'),
