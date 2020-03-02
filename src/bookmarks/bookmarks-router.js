@@ -91,25 +91,34 @@ bookmarksRouter
       })
       .catch(next);
   })
-  .delete((req, res) => {
-    const { id } = req.params;
+  .delete((req, res, next) => {
+    const knexInstance = req.app.get('db');
+    BookmarksService.deleteBookmark(
+      knexInstance,
+      req.params.id
+    )
+      .then(() => {
+        res.status(204).end();
+      })
+      .catch(next);
+    // const { id } = req.params;
 
-    const bookmarkIndex = bookmarks.findIndex( b => b.id === id);
+    // const bookmarkIndex = bookmarks.findIndex( b => b.id === id);
 
-    if (bookmarkIndex === -1) {
-      logger.error(`Bookmark with the id ${id} is not found`);
-      return res
-        .status(404)
-        .send('Not found');
-    }
+    // if (bookmarkIndex === -1) {
+    //   logger.error(`Bookmark with the id ${id} is not found`);
+    //   return res
+    //     .status(404)
+    //     .send('Not found');
+    // }
 
-    bookmarks.splice(bookmarkIndex, 1);
+    // bookmarks.splice(bookmarkIndex, 1);
 
-    logger.info(`Bookmark with the id ${id} deleted.`);
+    // logger.info(`Bookmark with the id ${id} deleted.`);
 
-    res
-      .status(204)
-      .end();
+    // res
+    //   .status(204)
+    //   .end();
   });
 
 module.exports = bookmarksRouter;

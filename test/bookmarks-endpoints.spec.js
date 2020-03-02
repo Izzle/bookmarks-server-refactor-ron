@@ -250,4 +250,32 @@ describe('Bookmarks Endpoints', function() {
         });
     });
   });
+
+  describe.only('DELETE /bookmarks/:id', () => {
+    context('Given there are bookmarks in the database', () => {
+      const testBookmarks = fixtures.makeBookmarksArray();
+
+      beforeEach('insert bookmarks', () => {
+        return db
+          .into('bookmarks_table')
+          .insert(testBookmarks);
+      });
+
+      it('responds with 204 and removes the bookmark', () => {
+        const idToRemove = 2;
+        const expectedBookmarks = testBookmarks.filter(bookmark => bookmark.id !== idToRemove);
+
+        return supertest(app)
+          .delete(`/bookmarks/${idToRemove}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(204)
+          .then(res => {
+            return supertest(app)
+              .get('/bookmarks')
+              .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+              .expect(expectedBookmarks);
+          });
+      });
+    });
+  });
 });
