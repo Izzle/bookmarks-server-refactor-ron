@@ -299,5 +299,41 @@ describe('Bookmarks Endpoints', function() {
           .expect(404, { error: { message: 'Bookmark not found' }});
       });
     });
+
+    context('Given there are bookmarks in the database', () => {
+      const testBookmarks = fixtures.makeBookmarksArray();
+
+      beforeEach('insert bookmarks', () => {
+        return db
+          .into('bookmarks_table')
+          .insert(testBookmarks); 
+      });
+
+      it('responds with 204 and updates the bookmark', () => {
+        const idToUpdate = 2;
+        const updateBookmark = {
+          title: 'Updated title... AskJeeves lol',
+          url: 'https://www.askjeeves.com',
+          description: 'Updated description text blah blah',
+          rating: 1
+        };
+        const expectedBookmark = {
+            ...testBookmarks[idToUpdate - 1],
+            ...updateBookmark
+        }
+
+        return supertest(app)
+          .patch(`/api/bookmarks/${idToUpdate}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .send(updateBookmark)
+          .expect(204)
+          .then(res => {
+            return supertest(app)
+              .get(`/api/bookmarks/${idToUpdate}`)
+              .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+              .expect(expectedBookmark);
+          });
+      });
+    });
   });
 });
