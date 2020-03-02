@@ -68,7 +68,7 @@ bookmarksRouter
         logger.info(`Bookmark with the id ${bookmark.id} created.`);
         res
           .status(201)
-          .location('http://' + path.posix.join(`localhost:8000/${req.originalUrl}/${bookmark.id}`))
+          .location('http://' + path.posix.join(`localhost:8000/${req.originalUrl}/${bookmark.id}`)) // path.posix.join fixes any potential double slash issues on endpoints (ie /api/bookmarks//${bookmarks.id})
           .json(serializeBookmark(bookmark));
       })
       .catch(next);
