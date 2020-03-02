@@ -3,7 +3,7 @@ const express = require('express');
 const xss = require('xss');
 const { isWebUri } = require('valid-url');
 const logger = require('../logger');
-const { bookmarks } = require('../store');
+const { PORT } = require('../config');
 const BookmarksService = require('./bookmarks-service');
 
 const bookmarksRouter = express.Router();
@@ -68,7 +68,7 @@ bookmarksRouter
         logger.info(`Bookmark with the id ${bookmark.id} created.`);
         res
           .status(201)
-          .location('http://' + path.posix.join(`localhost:8000/${req.originalUrl}/${bookmark.id}`)) // path.posix.join fixes any potential double slash issues on endpoints (ie /api/bookmarks//${bookmarks.id})
+          .location('http://' + path.posix.join(`localhost:${PORT}/${req.originalUrl}/${bookmark.id}`)) // path.posix.join fixes any potential double slash issues on endpoints (ie /api/bookmarks//${bookmarks.id})
           .json(serializeBookmark(bookmark));
       })
       .catch(next);
