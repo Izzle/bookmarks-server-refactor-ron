@@ -252,6 +252,16 @@ describe('Bookmarks Endpoints', function() {
   });
 
   describe.only('DELETE /bookmarks/:id', () => {
+    context('Given no bookmarks', () => {
+      it('responds with 404', () => {
+        const bookmarkId = 1234567;
+        return supertest(app)
+          .delete(`/bookmarks/${bookmarkId}`)
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+          .expect(404, 'lol');
+      });
+    });
+
     context('Given there are bookmarks in the database', () => {
       const testBookmarks = fixtures.makeBookmarksArray();
 
