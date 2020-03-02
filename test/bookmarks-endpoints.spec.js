@@ -23,11 +23,11 @@ describe('Bookmarks Endpoints', function() {
 
   afterEach('cleanup', () => db('bookmarks_table').truncate());
 
-  describe('GET /bookmarks', () => {
+  describe('GET /api/bookmarks', () => {
     context('Given an Unauthorized request', () => {
       it('responds 401 and Unauthorized request', () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmarks')
           .expect(401, { error: 'Unauthorized request' });
       });
     });
@@ -45,7 +45,7 @@ describe('Bookmarks Endpoints', function() {
   
       it('removes XSS attack content', () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200)
           .expect(res => {
@@ -61,7 +61,7 @@ describe('Bookmarks Endpoints', function() {
     context('Given no bookmarks', () => {
       it('responds 200 and an empty list', () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200, []);
       });
@@ -78,20 +78,20 @@ describe('Bookmarks Endpoints', function() {
 
       it('responds with 200 and all of the bookmarks', () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200, testBookmarks);
       });
     });
   });
 
-  describe('GET /bookmarks/:id', () => {
+  describe('GET /api/bookmarks/:id', () => {
     context('Given an Unauthorized request', () => {
       it('responds 401 and Unauthorized request', () => {
         // this works now because there is some data in our store, but after we update our POST it may not work anymore
         const thirdBookmark = store.bookmarks[2];
         return supertest(app)
-          .get(`/bookmarks/${thirdBookmark}`)
+          .get(`/api/bookmarks/${thirdBookmark}`)
           .expect(401, { error: 'Unauthorized request' });
       });
     });
@@ -100,7 +100,7 @@ describe('Bookmarks Endpoints', function() {
       it(`responds 404 and 'Bookmark not found'`, () => { // eslint-disable-line quotes
         const bookmarkId = 1234567890;
         return supertest(app)
-          .get(`/bookmarks/${bookmarkId}`)
+          .get(`/api/bookmarks/${bookmarkId}`)
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(404, { error: { message: 'Bookmark not found' }});
       });
@@ -117,7 +117,7 @@ describe('Bookmarks Endpoints', function() {
   
       it('removes XSS attack content', () => {
         return supertest(app)
-          .get(`/bookmarks/${maliciousBookmark.id}`)
+          .get(`/api/bookmarks/${maliciousBookmark.id}`)
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200)
           .expect(res => {
@@ -143,21 +143,21 @@ describe('Bookmarks Endpoints', function() {
         const bookmarkId = 2;
         const expectedBookmark = testBookmarks[bookmarkId - 1];
         return supertest(app)
-          .get(`/bookmarks/${bookmarkId}`)
+          .get(`/api/bookmarks/${bookmarkId}`)
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200, expectedBookmark);
       });
     });
   });
 
-  describe('POST /bookmarks', () => {
+  describe('POST /api/bookmarks', () => {
 
     context('Given an XSS attack bookmark', () => {
       const maliciousBookmark = fixtures.makeMaliciousBookmark();
   
       it('removes XSS attack content, responding 201 with the sanitized bookmark', () => {
         return supertest(app)
-          .post('/bookmarks')
+          .post('/api/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .send(maliciousBookmark)
           .expect(201)
@@ -166,7 +166,7 @@ describe('Bookmarks Endpoints', function() {
             expect(res.body.url).to.eql('https://www.ninjaz4lyfe.com'); 
             expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`); // eslint-disable-line quotes
             expect(res.body.rating).to.equal(5);
-            expect(res.headers.location).to.eql(`http://localhost:${PORT}/bookmarks/${res.body.id}`);
+            expect(res.headers.location).to.eql(`http://localhost:${PORT}/api/bookmarks/${res.body.id}`);
             return db('bookmarks_table') // this checks that the bookmark was actually created in the database
               .where({ id: res.body.id })
               .first()
@@ -183,7 +183,7 @@ describe('Bookmarks Endpoints', function() {
         invalidBookmark.rating = 'lol not a number yo';
 
         return supertest(app)
-          .post('/bookmarks')
+          .post('/api/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .send(invalidBookmark)
           .expect(400, {  error: { message: `'rating' must be a number between 1 and 5`} }); // eslint-disable-line quotes
@@ -196,7 +196,7 @@ describe('Bookmarks Endpoints', function() {
         invalidBookmark.rating = 10;
 
         return supertest(app)
-          .post('/bookmarks')
+          .post('/api/bookmarks')
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .send(invalidBookmark)
           .expect(400, {  error: { message: `'rating' must be a number between 1 and 5`} }); // eslint-disable-line quotes
@@ -218,7 +218,7 @@ describe('Bookmarks Endpoints', function() {
           delete newBookmark[field];
 
           return supertest(app)
-            .post('/bookmarks')
+            .post('/api/bookmarks')
             .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
             .send(newBookmark)
             .expect(400, {  error: { message: `Missing ${field} in request body`} });
@@ -232,7 +232,7 @@ describe('Bookmarks Endpoints', function() {
       delete newBookmark.id; // not needed for a POST request. We want a totally valid POST request here
   
       return supertest(app)
-        .post('/bookmarks')
+        .post('/api/bookmarks')
         .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
         .send(newBookmark)
         .expect(201)
@@ -242,7 +242,7 @@ describe('Bookmarks Endpoints', function() {
           expect(res.body.description).to.eql(newBookmark.description);
           expect(res.body.rating).to.eql(newBookmark.rating);
           expect(res.body).to.have.property('id');
-          expect(res.headers.location).to.eql(`http://localhost:${PORT}/bookmarks/${res.body.id}`);
+          expect(res.headers.location).to.eql(`http://localhost:${PORT}/api/bookmarks/${res.body.id}`);
           return db('bookmarks_table') // this checks that the bookmark was actually created in the database
             .where({ id: res.body.id })
             .first()
@@ -251,12 +251,12 @@ describe('Bookmarks Endpoints', function() {
     });
   });
 
-  describe('DELETE /bookmarks/:id', () => {
+  describe('DELETE /api/bookmarks/:id', () => {
     context('Given no bookmarks', () => {
       it('responds with 404', () => {
         const bookmarkId = 1234567;
         return supertest(app)
-          .delete(`/bookmarks/${bookmarkId}`)
+          .delete(`/api/bookmarks/${bookmarkId}`)
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(404, { error: { message: 'Bookmark not found' }});
       });
@@ -276,12 +276,12 @@ describe('Bookmarks Endpoints', function() {
         const expectedBookmarks = testBookmarks.filter(bookmark => bookmark.id !== idToRemove);
 
         return supertest(app)
-          .delete(`/bookmarks/${idToRemove}`)
+          .delete(`/api/bookmarks/${idToRemove}`)
           .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(204)
           .then(res => {
             return supertest(app)
-              .get('/bookmarks')
+              .get('/api/bookmarks')
               .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
               .expect(expectedBookmarks);
           });
